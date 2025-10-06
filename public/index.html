@@ -2,232 +2,675 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>CRUD Doctores & Pacientes</title>
+  <title>Sistema de Gestión Hospitalaria</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
-    /* ======= CSS elegante celeste ======= */
     :root {
       --celeste: #6ec5ff;
+      --celeste-oscuro: #3da8e8;
       --celeste-claro: #d9efff;
-      --texto: #343a40;
+      --sidebar-width: 280px;
+      --texto: #2c3e50;
+      --bg-light: #f8f9fa;
     }
 
-    body { background: #f6f8fb; color: var(--texto); font-family: 'Segoe UI', sans-serif; }
-    .navbar { background-color: var(--celeste) !important; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
-    .navbar-brand { font-weight: 700; color: #fff !important; display: flex; align-items: center; gap: 8px; font-size: 1.15rem; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-light);
+      color: var(--texto);
+      overflow-x: hidden;
+    }
 
-    .card { border: 0; box-shadow: 0 6px 22px rgba(0,0,0,.06); border-radius: 14px; }
-    .tab-pane { background: #fff; border-radius: 0 0 16px 16px; }
-    .form-section-title { font-size: .95rem; font-weight: 600; color: #495057; text-transform: uppercase; letter-spacing: .6px; }
-    .divider { height: 1px; background: #e9ecef; margin: .75rem 0 1rem; }
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: var(--sidebar-width);
+      background: linear-gradient(180deg, var(--celeste) 0%, var(--celeste-oscuro) 100%);
+      color: white;
+      padding: 0;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
 
-    /* Botones principales */
-    .btn-primary {
-      background-color: var(--celeste);
-      border-color: var(--celeste);
+    .sidebar-header {
+      padding: 2rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.1);
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar-logo i {
+      font-size: 2rem;
+      background: white;
+      color: var(--celeste);
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-left: 3.5rem;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1.5rem 0;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      margin: 0.3rem 1rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.9rem 1.2rem;
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      border-radius: 12px;
+      transition: all 0.3s ease;
       font-weight: 500;
     }
-    .btn-primary:hover {
-      background-color: #53b7fb;
-      border-color: #53b7fb;
+
+    .nav-link i {
+      font-size: 1.3rem;
+      width: 24px;
     }
 
-    /* Encabezados de tabla */
-    .table thead th {
+    .nav-link:hover {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      transform: translateX(5px);
+    }
+
+    .nav-link.active {
+      background: white;
+      color: var(--celeste);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .sidebar-footer {
+      padding: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.1);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: white;
+    }
+
+    .user-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: white;
+      color: var(--celeste);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .page-header {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--texto);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .page-title i {
+      color: var(--celeste);
+    }
+
+    .page-subtitle {
+      color: #6c757d;
+      font-size: 0.95rem;
+    }
+
+    /* STATS CARDS */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      background: var(--celeste-claro);
+      color: var(--celeste);
+    }
+
+    .stat-content h3 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--texto);
+      margin: 0;
+    }
+
+    .stat-content p {
+      margin: 0;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    /* CONTENT GRID */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 2rem;
+    }
+
+    .card-modern {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+
+    .card-header-modern {
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, var(--celeste-claro) 0%, white 100%);
+      border-bottom: 2px solid var(--celeste-claro);
+    }
+
+    .card-title-modern {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--texto);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-body-modern {
+      padding: 2rem;
+    }
+
+    /* FORM STYLING */
+    .form-floating > label {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--celeste);
+      box-shadow: 0 0 0 0.25rem rgba(110, 197, 255, 0.15);
+    }
+
+    .btn-primary {
       background: var(--celeste);
-      color: #fff;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--celeste-oscuro);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(110, 197, 255, 0.4);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    /* TABLE STYLING */
+    .table-container {
+      overflow-x: auto;
+      max-height: 500px;
+      border-radius: 12px;
+    }
+
+    .table-modern {
+      margin: 0;
+      width: 100%;
+    }
+
+    .table-modern thead th {
+      background: var(--celeste);
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      padding: 1rem;
       border: none;
       position: sticky;
       top: 0;
-      z-index: 1;
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.85rem;
-      letter-spacing: .5px;
+      z-index: 10;
     }
 
-    .table tbody tr:hover { background-color: var(--celeste-claro); }
+    .table-modern tbody tr {
+      transition: all 0.2s ease;
+    }
 
-    .badge-soft {
+    .table-modern tbody tr:hover {
+      background: var(--celeste-claro);
+      transform: scale(1.01);
+    }
+
+    .table-modern tbody td {
+      padding: 1rem;
+      vertical-align: middle;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .badge-modern {
       background: var(--celeste-claro);
       color: var(--celeste);
-      border: 1px dashed var(--celeste);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .btn-action {
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      border: 2px solid;
+      background: transparent;
+      transition: all 0.3s ease;
       font-weight: 500;
     }
 
+    .btn-action.edit {
+      color: var(--celeste);
+      border-color: var(--celeste);
+    }
+
+    .btn-action.edit:hover {
+      background: var(--celeste);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .btn-action.delete {
+      color: #ff6b6b;
+      border-color: #ff6b6b;
+    }
+
+    .btn-action.delete:hover {
+      background: #ff6b6b;
+      color: white;
+      transform: scale(1.05);
+    }
+
     .img-thumb {
-      width: 56px;
-      height: 56px;
+      width: 50px;
+      height: 50px;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 2px solid var(--celeste-claro);
     }
 
-    .btn-icon {
-      padding: .35rem .55rem;
-      border-radius: 6px;
+    .view-section {
+      display: none;
     }
 
-    .btn-outline-primary {
-      border-color: var(--celeste);
-      color: var(--celeste);
-    }
-    .btn-outline-primary:hover {
-      background-color: var(--celeste);
-      color: white;
+    .view-section.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
     }
 
-    .btn-outline-danger {
-      border-color: #ff6b6b;
-      color: #ff6b6b;
-    }
-    .btn-outline-danger:hover {
-      background-color: #ff6b6b;
-      color: white;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .form-floating>label { color: #6c757d; }
+    /* RESPONSIVE */
+    @media (max-width: 1200px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .stats-container {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-dark">
-    <div class="container">
-      <span class="navbar-brand">
-        <i class="bi bi-lungs-fill"></i> CRUD Doctores & Pacientes
-      </span>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <i class="bi bi-hospital-fill"></i>
+        <span>Hospital+</span>
+      </div>
+      <div class="sidebar-subtitle">Sistema de Gestión</div>
     </div>
-  </nav>
 
-  <div class="container py-4">
-    <ul class="nav nav-tabs" id="tabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-doctores" type="button" role="tab">Doctores</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-pacientes" type="button" role="tab">Pacientes</button>
-      </li>
-    </ul>
+    <nav class="sidebar-nav">
+      <div class="nav-item">
+        <a href="#" class="nav-link active" data-section="doctores">
+          <i class="bi bi-file-medical-fill"></i>
+          <span>Doctores</span>
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="nav-link" data-section="pacientes">
+          <i class="bi bi-people-fill"></i>
+          <span>Pacientes</span>
+        </a>
+      </div>
+    </nav>
 
-    <div class="tab-content border-start border-end border-bottom p-3">
-      <!-- ================= DOCTORES ================= -->
-      <div class="tab-pane fade show active" id="tab-doctores" role="tabpanel">
-        <div class="row g-3">
-          <div class="col-12 col-lg-4">
-            <div class="card p-3">
-              <div class="form-section-title">Gestión de Doctores</div>
-              <div class="divider"></div>
-              <form id="form-doctor" class="row g-3">
-                <input type="hidden" id="doc-id">
-                <div class="col-12">
-                  <div class="form-floating">
-                    <input id="doc-nombre" class="form-control" placeholder="Nombre del doctor" required>
-                    <label for="doc-nombre">Nombre</label>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <div class="form-floating">
-                    <input id="doc-especialidad" class="form-control" placeholder="Especialidad" required>
-                    <label for="doc-especialidad">Especialidad</label>
-                  </div>
-                </div>
-                <div class="d-flex gap-2">
-                  <button class="btn btn-primary" type="submit" id="doc-guardar">Guardar</button>
-                  <button class="btn btn-secondary" type="button" id="doc-cancel" hidden>Cancelar</button>
-                </div>
-              </form>
-            </div>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">A</div>
+        <div>
+          <div style="font-weight: 600;">Administrador</div>
+          <div style="font-size: 0.85rem; opacity: 0.8;">admin@hospital.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <!-- SECCIÓN DOCTORES -->
+    <section class="view-section active" id="section-doctores">
+      <div class="page-header">
+        <h1 class="page-title">
+          <i class="bi bi-file-medical-fill"></i>
+          Gestión de Doctores
+        </h1>
+        <p class="page-subtitle">Administra el personal médico del hospital</p>
+      </div>
+
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-person-badge-fill"></i>
           </div>
-
-          <div class="col-12 col-lg-8">
-            <div class="card p-3">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="form-section-title mb-0">Lista de Doctores</div>
-                <span class="badge badge-soft" id="doc-count">0 doctores</span>
-              </div>
-              <div class="table-responsive mt-3" style="max-height: 420px;">
-                <table class="table table-sm align-middle">
-                  <thead><tr><th>ID</th><th>Nombre</th><th>Especialidad</th><th class="text-end">Acciones</th></tr></thead>
-                  <tbody id="tbody-doctores"></tbody>
-                </table>
-              </div>
-            </div>
+          <div class="stat-content">
+            <h3 id="doc-count-stat">0</h3>
+            <p>Total Doctores</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-award-fill"></i>
+          </div>
+          <div class="stat-content">
+            <h3 id="doc-especialidades">0</h3>
+            <p>Especialidades</p>
           </div>
         </div>
       </div>
 
-      <!-- ================= PACIENTES ================= -->
-      <div class="tab-pane fade" id="tab-pacientes" role="tabpanel">
-        <div class="row g-3">
-          <div class="col-12 col-xxl-5">
-            <div class="card p-3">
-              <div class="form-section-title">Gestión de Pacientes</div>
-              <div class="divider"></div>
-              <form id="form-paciente" class="row g-3" enctype="multipart/form-data">
-                <input type="hidden" id="pac-id">
-                <div class="col-12">
-                  <div class="form-floating">
-                    <input id="pac-nombre" class="form-control" placeholder="Nombre del paciente" required>
-                    <label for="pac-nombre">Nombre</label>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="form-floating">
-                    <input id="pac-edad" type="number" min="0" class="form-control" placeholder="Edad" required>
-                    <label for="pac-edad">Edad</label>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="form-floating">
-                    <select id="pac-doctor" class="form-select" required></select>
-                    <label for="pac-doctor">Doctor</label>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Foto (opcional)</label>
-                  <input id="pac-foto" type="file" accept="image/*" class="form-control">
-                  <div class="mt-2">
-                    <img id="preview" class="img-thumb d-none" alt="preview">
-                  </div>
-                </div>
-                <div class="d-flex gap-2">
-                  <button class="btn btn-primary" type="submit" id="pac-guardar">Guardar</button>
-                  <button class="btn btn-secondary" type="button" id="pac-cancel" hidden>Cancelar</button>
-                </div>
-              </form>
-            </div>
+      <div class="content-grid">
+        <div class="card-modern">
+          <div class="card-header-modern">
+            <h2 class="card-title-modern">
+              <i class="bi bi-plus-circle-fill"></i>
+              Nuevo Doctor
+            </h2>
           </div>
-
-          <div class="col-12 col-xxl-7">
-            <div class="card p-3">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="form-section-title mb-0">Lista de Pacientes</div>
-                <span class="badge badge-soft" id="pac-count">0 pacientes</span>
+          <div class="card-body-modern">
+            <form id="form-doctor">
+              <input type="hidden" id="doc-id">
+              <div class="mb-3">
+                <div class="form-floating">
+                  <input id="doc-nombre" class="form-control" placeholder="Nombre completo" required>
+                  <label>Nombre Completo</label>
+                </div>
               </div>
-              <div class="table-responsive mt-3" style="max-height: 520px;">
-                <table class="table table-sm align-middle">
-                  <thead>
-                    <tr>
-                      <th>ID</th><th>Nombre</th><th>Edad</th><th>Doctor</th><th>Especialidad</th><th>Foto</th><th class="text-end">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tbody-pacientes"></tbody>
-                </table>
+              <div class="mb-4">
+                <div class="form-floating">
+                  <input id="doc-especialidad" class="form-control" placeholder="Especialidad" required>
+                  <label>Especialidad Médica</label>
+                </div>
               </div>
-            </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-primary flex-grow-1" type="submit">
+                  <i class="bi bi-check-circle me-2"></i>Guardar
+                </button>
+                <button class="btn btn-secondary" type="button" id="doc-cancel" hidden>
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </div> 
-    </div>
-  </div>
+
+        <div class="card-modern">
+          <div class="card-header-modern">
+            <h2 class="card-title-modern">
+              <i class="bi bi-list-ul"></i>
+              Lista de Doctores
+              <span class="badge-modern ms-auto" id="doc-count">0 registros</span>
+            </h2>
+          </div>
+          <div class="table-container">
+            <table class="table-modern">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre Completo</th>
+                  <th>Especialidad</th>
+                  <th class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-doctores"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN PACIENTES -->
+    <section class="view-section" id="section-pacientes">
+      <div class="page-header">
+        <h1 class="page-title">
+          <i class="bi bi-people-fill"></i>
+          Gestión de Pacientes
+        </h1>
+        <p class="page-subtitle">Administra los pacientes del hospital</p>
+      </div>
+
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <div class="stat-content">
+            <h3 id="pac-count-stat">0</h3>
+            <p>Total Pacientes</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-heart-pulse-fill"></i>
+          </div>
+          <div class="stat-content">
+            <h3>100%</h3>
+            <p>Cobertura Médica</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card-modern">
+          <div class="card-header-modern">
+            <h2 class="card-title-modern">
+              <i class="bi bi-plus-circle-fill"></i>
+              Nuevo Paciente
+            </h2>
+          </div>
+          <div class="card-body-modern">
+            <form id="form-paciente" enctype="multipart/form-data">
+              <input type="hidden" id="pac-id">
+              <div class="mb-3">
+                <div class="form-floating">
+                  <input id="pac-nombre" class="form-control" placeholder="Nombre" required>
+                  <label>Nombre Completo</label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="form-floating">
+                  <input id="pac-edad" type="number" min="0" class="form-control" placeholder="Edad" required>
+                  <label>Edad</label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="form-floating">
+                  <select id="pac-doctor" class="form-select" required></select>
+                  <label>Doctor Asignado</label>
+                </div>
+              </div>
+              <div class="mb-4">
+                <label class="form-label fw-bold">Fotografía (opcional)</label>
+                <input id="pac-foto" type="file" accept="image/*" class="form-control">
+                <div class="mt-3">
+                  <img id="preview" class="img-thumb d-none" alt="preview">
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-primary flex-grow-1" type="submit">
+                  <i class="bi bi-check-circle me-2"></i>Guardar
+                </button>
+                <button class="btn btn-secondary" type="button" id="pac-cancel" hidden>
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card-modern">
+          <div class="card-header-modern">
+            <h2 class="card-title-modern">
+              <i class="bi bi-list-ul"></i>
+              Lista de Pacientes
+              <span class="badge-modern ms-auto" id="pac-count">0 registros</span>
+            </h2>
+          </div>
+          <div class="table-container">
+            <table class="table-modern">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Edad</th>
+                  <th>Doctor</th>
+                  <th>Especialidad</th>
+                  <th>Foto</th>
+                  <th class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-pacientes"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
     const API = location.origin + "/api";
     const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+
+    // Navigation
+    $$('.nav-link[data-section]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const section = e.currentTarget.dataset.section;
+        
+        $$('.nav-link').forEach(l => l.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        
+        $$('.view-section').forEach(s => s.classList.remove('active'));
+        $('#section-' + section).classList.add('active');
+      });
+    });
 
     async function fetchJSON(url, opts) {
       const r = await fetch(url, opts);
@@ -240,18 +683,28 @@
       const rows = await fetchJSON(API + "/doctores");
       $("#tbody-doctores").innerHTML = rows.map(d => `
         <tr>
-          <td>${d.id_doctor}</td>
+          <td><strong>#${d.id_doctor}</strong></td>
           <td>${d.nombre}</td>
-          <td>${d.especialidad}</td>
+          <td><span class="badge-modern">${d.especialidad}</span></td>
           <td class="text-end">
-            <button class="btn btn-outline-primary btn-icon" onclick='editDoctor(${JSON.stringify(d.id_doctor)}, ${JSON.stringify(d.nombre)}, ${JSON.stringify(d.especialidad)})'><i class="bi bi-pen-fill"></i></button>
-            <button class="btn btn-outline-danger btn-icon ms-1" onclick="delDoctor(${d.id_doctor})"><i class="bi bi-trash3-fill"></i></button>
+            <button class="btn-action edit" onclick='editDoctor(${JSON.stringify(d.id_doctor)}, ${JSON.stringify(d.nombre)}, ${JSON.stringify(d.especialidad)})'>
+              <i class="bi bi-pencil-fill"></i> Editar
+            </button>
+            <button class="btn-action delete ms-1" onclick="delDoctor(${d.id_doctor})">
+              <i class="bi bi-trash3-fill"></i> Eliminar
+            </button>
           </td>
         </tr>
       `).join("");
-      $("#doc-count").textContent = rows.length + " doctores";
+      
+      $("#doc-count").textContent = rows.length + " registros";
+      $("#doc-count-stat").textContent = rows.length;
+      
+      const especialidades = new Set(rows.map(d => d.especialidad));
+      $("#doc-especialidades").textContent = especialidades.size;
+      
       const sel = $("#pac-doctor");
-      sel.innerHTML = '<option disabled selected>Seleccione...</option>' +
+      sel.innerHTML = '<option disabled selected>Seleccione un doctor...</option>' +
         rows.map(x => `<option value="${x.id_doctor}">${x.nombre} — ${x.especialidad}</option>`).join("");
     }
 
@@ -277,14 +730,22 @@
     }
 
     async function delDoctor(id) {
-      if (!confirm("¿Eliminar doctor?")) return;
+      if (!confirm("¿Está seguro de eliminar este doctor?")) return;
       try {
         await fetchJSON(API + "/doctores/" + id, { method: "DELETE" });
-        await loadDoctores(); await loadPacientes();
-      } catch { alert("No se puede eliminar. Tiene pacientes asociados."); }
+        await loadDoctores(); 
+        await loadPacientes();
+      } catch { 
+        alert("No se puede eliminar. Tiene pacientes asociados."); 
+      }
     }
 
-    $("#doc-cancel").addEventListener("click", () => { $("#form-doctor").reset(); $("#doc-id").value=""; $("#doc-cancel").hidden=true; });
+    $("#doc-cancel").addEventListener("click", () => { 
+      $("#form-doctor").reset(); 
+      $("#doc-id").value=""; 
+      $("#doc-cancel").hidden=true; 
+    });
+    
     $("#form-doctor").addEventListener("submit", saveDoctor);
 
     // ---------- PACIENTES ----------
@@ -292,19 +753,25 @@
       const rows = await fetchJSON(API + "/pacientes");
       $("#tbody-pacientes").innerHTML = rows.map(p => `
         <tr>
-          <td>${p.id_paciente}</td>
+          <td><strong>#${p.id_paciente}</strong></td>
           <td>${p.nombre}</td>
-          <td>${p.edad}</td>
+          <td>${p.edad} años</td>
           <td>${p.doctor?.nombre ?? "-"}</td>
-          <td>${p.doctor?.especialidad ?? "-"}</td>
+          <td><span class="badge-modern">${p.doctor?.especialidad ?? "-"}</span></td>
           <td>${p.foto ? `<img class="img-thumb" src="/uploads/${p.foto}">` : "-"}</td>
           <td class="text-end">
-            <button class="btn btn-outline-primary btn-icon" onclick='editPaciente(${JSON.stringify(p)})'><i class="bi bi-pen-fill"></i></button>
-            <button class="btn btn-outline-danger btn-icon ms-1" onclick="delPaciente(${p.id_paciente})"><i class="bi bi-trash3-fill"></i></button>
+            <button class="btn-action edit" onclick='editPaciente(${JSON.stringify(p)})'>
+              <i class="bi bi-pencil-fill"></i> Editar
+            </button>
+            <button class="btn-action delete ms-1" onclick="delPaciente(${p.id_paciente})">
+              <i class="bi bi-trash3-fill"></i> Eliminar
+            </button>
           </td>
         </tr>
       `).join("");
-      $("#pac-count").textContent = rows.length + " pacientes";
+      
+      $("#pac-count").textContent = rows.length + " registros";
+      $("#pac-count-stat").textContent = rows.length;
     }
 
     function editPaciente(p) {
@@ -312,8 +779,12 @@
       $("#pac-nombre").value = p.nombre;
       $("#pac-edad").value = p.edad;
       $("#pac-doctor").value = p.id_doctor;
-      if (p.foto) { $("#preview").src = "/uploads/" + p.foto; $("#preview").classList.remove("d-none"); }
-      else $("#preview").classList.add("d-none");
+      if (p.foto) { 
+        $("#preview").src = "/uploads/" + p.foto; 
+        $("#preview").classList.remove("d-none"); 
+      } else {
+        $("#preview").classList.add("d-none");
+      }
       $("#pac-cancel").hidden = false;
     }
 
@@ -324,23 +795,39 @@
       fd.append("nombre", $("#pac-nombre").value.trim());
       fd.append("edad", $("#pac-edad").value);
       fd.append("id_doctor", $("#pac-doctor").value);
-      const file = $("#pac-foto").files[0]; if (file) fd.append("foto", file);
+      const file = $("#pac-foto").files[0]; 
+      if (file) fd.append("foto", file);
+      
       if (id) await fetch(API + "/pacientes/" + id, { method: "PUT", body: fd });
       else await fetch(API + "/pacientes", { method: "POST", body: fd });
-      $("#form-paciente").reset(); $("#pac-id").value=""; $("#pac-cancel").hidden=true; $("#preview").classList.add("d-none");
+      
+      $("#form-paciente").reset(); 
+      $("#pac-id").value=""; 
+      $("#pac-cancel").hidden=true; 
+      $("#preview").classList.add("d-none");
       await loadPacientes();
     }
 
     async function delPaciente(id) {
-      if (!confirm("¿Eliminar paciente?")) return;
+      if (!confirm("¿Está seguro de eliminar este paciente?")) return;
       await fetchJSON(API + "/pacientes/" + id, { method: "DELETE" });
       await loadPacientes();
     }
 
-    $("#pac-cancel").addEventListener("click", () => { $("#form-paciente").reset(); $("#pac-id").value=""; $("#pac-cancel").hidden=true; $("#preview").classList.add("d-none"); });
+    $("#pac-cancel").addEventListener("click", () => { 
+      $("#form-paciente").reset(); 
+      $("#pac-id").value=""; 
+      $("#pac-cancel").hidden=true; 
+      $("#preview").classList.add("d-none"); 
+    });
+    
     $("#form-paciente").addEventListener("submit", savePaciente);
 
-    (async()=>{await loadDoctores(); await loadPacientes();})();
+    // Inicializar
+    (async()=>{
+      await loadDoctores(); 
+      await loadPacientes();
+    })();
   </script>
 </body>
 </html>
